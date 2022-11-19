@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <asset>
+    <contributor>
+      <author>Blender User</author>
+      <authoring_tool>Blender 3.3.0 commit date:2022-09-06, commit time:15:39, hash:0759f671ce1f</authoring_tool>
+    </contributor>
+    <created>2022-10-23T09:53:57</created>
+    <modified>2022-10-23T09:53:57</modified>
+    <unit name="meter" meter="1"/>
+    <up_axis>Z_UP</up_axis>
+  </asset>
+  <library_effects>
+    <effect id="Steel_-_Satin-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.627451 0.627451 0.627451 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+  </library_effects>
+  <library_images/>
+  <library_materials>
+    <material id="Steel_-_Satin-material" name="Steel_-_Satin">
+      <instance_effect url="#Steel_-_Satin-effect"/>
+    </material>
+  </library_materials>
+  <library_geometries>
+    <geometry id="flyswatter-mesh" name="flyswatter">
+      <mesh>
+        <source id="flyswatter-mesh-positions">
+          <float_array id="flyswatter-mesh-positions-array" count="96">-5 0.5 -34.5 -4.5 0.5 -35 -4.5 0 -35 -5 0 -34.5 4.5 0 -35 5 0 -34.5 5 0 -23.5 4.5 0 -23 1.5 0 -23 1 0 -22.5 1 0 -0.5 0.5 0 0 -0.5 0 0 -1 0 -0.5 -1 0 -22.5 -1.5 0 -23 -4.5 0 -23 -5 0 -23.5 4.5 0.5 -35 5 0.5 -34.5 5 0.5 -23.5 4.5 0.5 -23 1.5 0.5 -23 1 0.5 -22.5 -4.5 0.5 -23 -5 0.5 -23.5 -1.5 0.5 -23 -1 0.5 -22.5 -1 0.5 -0.5 -0.5 0.5 0 0.5 0.5 0 1 0.5 -0.5</float_array>
+          <technique_common>
+            <accessor source="#flyswatter-mesh-positions-array" count="32" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="flyswatter-mesh-normals">
+          <float_array id="flyswatter-mesh-normals-array" count="30">-0.7071068 0 -0.7071068 0 -1 0 0 0 -1 0.7071068 0 -0.7071068 0.7071068 0 0.7071068 0 0 1 -0.7071068 0 0.7071068 -1 0 0 1 0 0 0 1 0</float_array>
+          <technique_common>
+            <accessor source="#flyswatter-mesh-normals-array" count="10" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="flyswatter-mesh-map-0">
+          <float_array id="flyswatter-mesh-map-0-array" count="360">0.03535497 0.04999995 -0.03535497 0.04999995 0.03535497 0 0.03535497 0 -0.03535497 0.04999995 -0.03535497 0 0.5 0.55 0.45 0.6 0.5 -0.55 0.5 -0.55 0.45 0.6 0.45 -0.6 0.45 -0.6 0.45 0.6 0.15 -0.6 0.15 -0.6 0.45 0.6 -0.45 0.6 0.15 -0.6 -0.45 0.6 0.1 -0.65 0.1 -0.65 -0.45 0.6 -0.1 -0.65 0.1 -0.65 -0.1 -0.65 0.1 -2.85 0.1 -2.85 -0.1 -0.65 -0.1 -2.85 0.1 -2.85 -0.1 -2.85 0.04999995 -2.9 0.04999995 -2.9 -0.1 -2.85 -0.04999995 -2.9 -0.5 0.55 -0.5 -0.55 -0.45 0.6 -0.45 0.6 -0.5 -0.55 -0.45 -0.6 -0.45 0.6 -0.45 -0.6 -0.15 -0.6 -0.15 -0.6 -0.1 -0.65 -0.45 0.6 0.95 0.04999995 0.04999995 0.04999995 0.95 0 0.95 0 0.04999995 0.04999995 0.04999995 0 0.03535497 0.04999995 -0.03535497 0.04999995 0.03535497 0 0.03535497 0 -0.03535497 0.04999995 -0.03535497 0 0.03535497 0.04999995 -0.03535497 0.04999995 0.03535497 0 0.03535497 0 -0.03535497 0.04999995 -0.03535497 0 0.35 0.04999995 0.04999995 0.04999995 0.35 0 0.35 0 0.04999995 0.04999995 0.04999995 0 -0.03535497 0 0.03535497 0 -0.03535497 0.04999995 -0.03535497 0.04999995 0.03535497 0 0.03535497 0.04999995 0.03535497 0.04999995 -0.03535497 0.04999995 0.03535497 0 0.03535497 0 -0.03535497 0.04999995 -0.03535497 0 0.04999995 0 0.35 0 0.04999995 0.04999995 0.04999995 0.04999995 0.35 0 0.35 0.04999995 -0.03535497 0 0.03535497 0 -0.03535497 0.04999995 -0.03535497 0.04999995 0.03535497 0 0.03535497 0.04999995 0.04999995 0 2.25 0 0.04999995 0.04999995 0.04999995 0.04999995 2.25 0 2.25 0.04999995 0.03535497 0.04999995 -0.03535497 0.04999995 0.03535497 0 0.03535497 0 -0.03535497 0.04999995 -0.03535497 0 0.04999995 0 0.15 0 0.04999995 0.04999995 0.04999995 0.04999995 0.15 0 0.15 0.04999995 0.03535497 0.04999995 -0.03535497 0.04999995 0.03535497 0 0.03535497 0 -0.03535497 0.04999995 -0.03535497 0 2.25 0.04999995 0.04999995 0.04999995 2.25 0 2.25 0 0.04999995 0.04999995 0.04999995 0 0.04999995 0 1.15 0 0.04999995 0.04999995 0.04999995 0.04999995 1.15 0 1.15 0.04999995 1.15 0.04999995 0.04999995 0.04999995 1.15 0 1.15 0 0.04999995 0.04999995 0.04999995 0 -0.55 -0.5 0.55 -0.5 -0.6 -0.45 -0.6 -0.45 0.55 -0.5 0.6 -0.45 -0.6 -0.45 0.6 -0.45 0.6 -0.15 0.6 -0.15 0.65 -0.1 -0.6 -0.45 -0.6 -0.45 0.65 -0.1 0.65 0.1 -0.6 -0.45 0.65 0.1 0.6 0.15 0.65 -0.1 2.85 -0.1 0.65 0.1 0.65 0.1 2.85 -0.1 2.85 0.1 2.85 0.1 2.85 -0.1 2.9 0.04999995 2.9 0.04999995 2.85 -0.1 2.9 -0.04999995 -0.6 -0.45 0.6 0.15 -0.6 0.45 -0.6 0.45 0.6 0.15 0.6 0.45 -0.6 0.45 0.6 0.45 -0.55 0.5 -0.55 0.5 0.6 0.45 0.55 0.5</float_array>
+          <technique_common>
+            <accessor source="#flyswatter-mesh-map-0-array" count="180" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="flyswatter-mesh-vertices">
+          <input semantic="POSITION" source="#flyswatter-mesh-positions"/>
+        </vertices>
+        <triangles material="Steel_-_Satin-material" count="60">
+          <input semantic="VERTEX" source="#flyswatter-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#flyswatter-mesh-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#flyswatter-mesh-map-0" offset="2" set="0"/>
+          <p>0 0 0 1 0 1 3 0 2 3 0 3 1 0 4 2 0 5 3 1 6 2 1 7 17 1 8 17 1 9 2 1 10 16 1 11 16 1 12 2 1 13 15 1 14 15 1 15 2 1 16 4 1 17 15 1 18 4 1 19 14 1 20 14 1 21 4 1 22 9 1 23 14 1 24 9 1 25 13 1 26 13 1 27 9 1 28 10 1 29 13 1 30 10 1 31 12 1 32 12 1 33 10 1 34 11 1 35 5 1 36 6 1 37 4 1 38 4 1 39 6 1 40 7 1 41 4 1 42 7 1 43 8 1 44 8 1 45 9 1 46 4 1 47 1 2 48 18 2 49 2 2 50 2 2 51 18 2 52 4 2 53 18 3 54 19 3 55 4 3 56 4 3 57 19 3 58 5 3 59 20 4 60 21 4 61 6 4 62 6 4 63 21 4 64 7 4 65 21 5 66 22 5 67 7 5 68 7 5 69 22 5 70 8 5 71 9 4 72 8 4 73 23 4 74 23 4 75 8 4 76 22 4 77 24 6 78 25 6 79 16 6 80 16 6 81 25 6 82 17 6 83 16 5 84 15 5 85 24 5 86 24 5 87 15 5 88 26 5 89 15 6 90 14 6 91 26 6 92 26 6 93 14 6 94 27 6 95 14 7 96 13 7 97 27 7 98 27 7 99 13 7 100 28 7 101 29 6 102 28 6 103 12 6 104 12 6 105 28 6 106 13 6 107 12 5 108 11 5 109 29 5 110 29 5 111 11 5 112 30 5 113 31 4 114 30 4 115 10 4 116 10 4 117 30 4 118 11 4 119 23 8 120 31 8 121 9 8 122 9 8 123 31 8 124 10 8 125 3 7 126 17 7 127 0 7 128 0 7 129 17 7 130 25 7 131 19 8 132 20 8 133 5 8 134 5 8 135 20 8 136 6 8 137 0 9 138 25 9 139 1 9 140 1 9 141 25 9 142 24 9 143 1 9 144 24 9 145 26 9 146 26 9 147 27 9 148 1 9 149 1 9 150 27 9 151 23 9 152 1 9 153 23 9 154 22 9 155 27 9 156 28 9 157 23 9 158 23 9 159 28 9 160 31 9 161 31 9 162 28 9 163 30 9 164 30 9 165 28 9 166 29 9 167 1 9 168 22 9 169 18 9 170 18 9 171 22 9 172 21 9 173 18 9 174 21 9 175 19 9 176 19 9 177 21 9 178 20 9 179</p>
+        </triangles>
+      </mesh>
+    </geometry>
+  </library_geometries>
+  <library_visual_scenes>
+    <visual_scene id="Scene" name="Scene">
+      <node id="flyswatter" name="flyswatter" type="NODE">
+        <matrix sid="transform">1 0 0 0 0 -1.62921e-7 -1 0 0 1 -1.62921e-7 0 0 0 0 1</matrix>
+        <instance_geometry url="#flyswatter-mesh" name="flyswatter">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="Steel_-_Satin-material" target="#Steel_-_Satin-material">
+                <bind_vertex_input semantic="UVMap" input_semantic="TEXCOORD" input_set="0"/>
+              </instance_material>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#Scene"/>
+  </scene>
+</COLLADA>
