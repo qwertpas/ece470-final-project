@@ -96,62 +96,25 @@ def myimshow(title, img):
 
 # ----------------- LOCALIZATION ----------------- #
 
-
-def process_item(imgs, item):
-
-    #images
-    rgb, hsv, depth, img_draw = imgs
-    #obtaining Yolo informations (class, coordinates, center)
-    x1, y1, x2, y2, cn, cl, nm = item.values()
-
-
-    msg = ModelStates()
-    msg.name = nm
-    
-    msg.pose = Pose(Point(*xyz), Quaternion(x=rot.x,y=rot.y,z=rot.z,w=rot.w))
-    
-    #pub.publish(msg)
-    #print(msg)
-    return msg
-
-
 #image processing
 def process_image(rgb, depth):    
     
     img_draw = rgb.copy()
     hsv = cv.cvtColor(rgb, cv.COLOR_BGR2HSV)
 
-    get_dist_tavolo(depth, hsv, img_draw)
-    get_origin(rgb)
-
-    #results collecting localization
-
-    #print("Model localization: Start...",end='\r')
-    model.conf = 0.6
-    results = model(rgb)
-    pandino = results.pandas().xyxy[0].to_dict(orient="records")
-    #print("Model localization: Finish  ")
-        
-    # ----
-    if depth is not None:
-        imgs = (rgb, hsv, depth, img_draw)
-        results = [process_item(imgs, item) for item in pandino]
     
-    # ----
-
-    msg = ModelStates()
-    for point in results:
-        if point is not None:
-            msg.name.append(point.name)
-            msg.pose.append(point.pose)
-    pub.publish(msg)
+    # msg = ModelStates()
+    # for point in results:
+    #     if point is not None:
+    #         msg.name.append(point.name)
+    #         msg.pose.append(point.pose)
+    # pub.publish(msg)
 
 
-    if a_show:
-        cv.imshow("vision-results.png", img_draw)
-        cv.waitKey()
+    # if a_show:
+    cv.imshow("vision-results.png", img_draw)
+    cv.waitKey()
 
-    pass
 
 def process_CB(image_rgb, image_depth):
     t_start = time.time()
@@ -163,7 +126,7 @@ def process_CB(image_rgb, image_depth):
 
     print("Time:", time.time() - t_start)
     rospy.signal_shutdown(0)
-    pass
+
 
 #init node function
 def start_node():
@@ -192,23 +155,10 @@ def start_node():
     rospy.spin() 
     pass
 
-def load_models():
-    global model, model_orientation
-    
-    #yolo model and weights classification
-    print("Loading model best.pt")
-    weight = path.join(path_weigths, 'best.pt')
-    model = torch.hub.load(path_yolo,'custom',path=weight, source='local')
 
-    #yolo model and weights orientation
-    print("Loading model orientation.pt")
-    weight = path.join(path_weigths, 'depth.pt')
-    model_orientation = torch.hub.load(path_yolo,'custom',path=weight, source='local')
-    pass
 
 if __name__ == '__main__':
 
-    load_models()
     try:
         start_node()
     except rospy.ROSInterruptException:

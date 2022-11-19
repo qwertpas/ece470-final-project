@@ -6,7 +6,7 @@ roslaunch levelManager lego_world.launch
 ```
 Choose the level (from 1 to 4):
 ```
-rosrun levelManager levelManager.py -l [level]
+rosrun levelManager levelManager.py -l 1
 ```
 Start the kinematics process
 ```
