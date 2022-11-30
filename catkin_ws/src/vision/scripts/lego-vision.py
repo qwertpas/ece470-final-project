@@ -148,6 +148,9 @@ def process_image(rgb, depth):
     roachX = (blob_image_center[0][0] - 317)*(0.25/-145)
     roachY = (blob_image_center[0][1] - 235.8)*(0.25/145) - 0.5
 
+    imgx = (int)(blob_image_center[0][0])
+    imgy = (int)(blob_image_center[0][1])
+
     print(roachX, roachY)
 
     res = ModelStates()
@@ -157,10 +160,12 @@ def process_image(rgb, depth):
     pub.publish(res)
 
     
-    cv.imshow("mask", mask_image)
+
+    # cv.imshow("mask", mask_image)
     
 
     # if a_show:
+    img_draw = cv2.circle(img_draw, (imgx, imgy) , 20, color=(255, 0, 0), thickness=3)
     cv.imshow("vision-results.png", img_draw)
     cv.waitKey()
 

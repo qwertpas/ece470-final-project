@@ -371,7 +371,7 @@ if __name__ == "__main__":
 
     print(vision_res)
 
-    roachX = vision_res.pose[0].position.x
+    roachX = vision_res.pose[0].position.x+0.02
     roachY = vision_res.pose[0].position.y
 
         # print("Waiting for vision to start")
@@ -400,6 +400,7 @@ if __name__ == "__main__":
 
 
     # Lower the object and release
+    controller.move(delta_quat=PyQuaternion(axis=[0, 0, 1], angle=math.pi/2))
     controller.move_to(x, y, z)
     # set_gripper(0.55)
     close_gripper(gazebo_model_name='cockroach', closure=0.55)
