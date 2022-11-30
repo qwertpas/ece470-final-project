@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+import cv2 as cv2
 import cv2 as cv
 import numpy as np
 import torch
@@ -102,14 +103,62 @@ def process_image(rgb, depth):
     img_draw = rgb.copy()
     hsv = cv.cvtColor(rgb, cv.COLOR_BGR2HSV)
 
-    
-    # msg = ModelStates()
-    # for point in results:
-    #     if point is not None:
-    #         msg.name.append(point.name)
-    #         msg.pose.append(point.pose)
-    # pub.publish(msg)
+    # Setup SimpleBlobDetector parameters.
+    params = cv2.SimpleBlobDetector_Params()
 
+    # ========================= Student's code starts here =========================
+
+    # Filter by Color
+    params.filterByColor = False
+
+    # Filter by Area.
+    params.filterByArea = True
+
+    # Filter by Circularity
+    params.filterByCircularity = False
+
+    # Filter by Inerita
+    params.filterByInertia = False
+
+    # Filter by Convexity
+    params.filterByConvexity = False
+
+    # ========================= Student's code ends here ===========================
+
+    # Create a detector with the parameters
+    detector = cv2.SimpleBlobDetector_create(params)
+
+    #orange
+    lower = (0,150, 130)     # orange lower
+    upper = (25,255,255)   # orange upper
+
+    # Define a mask using the lower and upper bounds of the target color
+    mask_image = cv2.inRange(hsv, lower, upper)
+
+    keypoints = detector.detect(mask_image)
+
+    # Find blob centers in the image coordinates
+    blob_image_center = []
+    num_blobs = len(keypoints)
+    for i in range(num_blobs):
+        if(keypoints[i].size > 15):
+            blob_image_center.append((keypoints[i].pt[0],keypoints[i].pt[1]))
+    num_blobs = len(blob_image_center)
+
+    roachX = (blob_image_center[0][0] - 317)*(0.25/-145)
+    roachY = (blob_image_center[0][1] - 235.8)*(0.25/145) - 0.5
+
+    print(roachX, roachY)
+
+    res = ModelStates()
+    res.name.append('roach')
+    res.pose.append(Pose(Point(x=roachX, y=roachY, z=0), Quaternion()))
+
+    pub.publish(res)
+
+    
+    cv.imshow("mask", mask_image)
+    
 
     # if a_show:
     cv.imshow("vision-results.png", img_draw)

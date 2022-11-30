@@ -115,10 +115,14 @@ if __name__ == '__main__':
 			delete_model_client(model_name='cockroach')
 
 			rot = Quaternion(*quaternion_from_euler(0, 0, 0))
-			point = Point(0, -0.5, 1)
+			#y from
+			x_spawn = np.random.uniform(-0.25, 0.25)
+			y_spawn = np.random.uniform(-0.10, 0.10) - 0.5
+			point = Point(x_spawn, y_spawn, 1)
 			pose =  Pose(point, rot)
 			spawn_model(model='cockroach', pos=pose, color='Gazebo/Orange')
-			print(f"Added a roach")
+			spawn_model(model='cockroach', pos=pose, color='Gazebo/Orange')
+			print(f"Added a roach at ({x_spawn}, {y_spawn})")
 		elif arg in ['unroach', 'del', 'despawn', 'd']:
 			delete_model_client = rospy.ServiceProxy('/gazebo/delete_model', DeleteModel)
 			print(delete_model_client(model_name='cockroach'))

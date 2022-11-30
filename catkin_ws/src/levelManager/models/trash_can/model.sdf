@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<sdf version="1.7">
+  <model name="trash_can">
+    <static>true</static>
+    <link name="link">
+      <pose>0 0 0 0 0 0</pose>
+
+      <visual name="visual">
+        <geometry>
+          <mesh>
+            <uri>model://trash_can/meshes/trashcan.stl</uri>
+            <scale>0.002 0.0015 0.002</scale>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+  </model>
+</sdf>

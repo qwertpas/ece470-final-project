@@ -223,8 +223,8 @@ def straighten(model_pose, gazebo_model_name):
         close_gripper(gazebo_model_name, model_size[0])
 
 
-def close_gripper(gazebo_model_name, closure=0):
-    set_gripper(0.81-closure*10)
+def close_gripper(gazebo_model_name, closure=0.55):
+    set_gripper(closure)
     rospy.sleep(0.5)
     # Create dynamic joint
     if gazebo_model_name is not None:
@@ -364,26 +364,52 @@ if __name__ == "__main__":
 
     # rospy.sleep(0.5)
 
-    open_gripper()
+    open_gripper(gazebo_model_name='cockroach')
 
+    print("Waiting for vision to start")
+    vision_res = rospy.wait_for_message("/lego_detections", ModelStates, timeout=None)
+
+    print(vision_res)
+
+    roachX = vision_res.pose[0].position.x
+    roachY = vision_res.pose[0].position.y
+
+        # print("Waiting for vision to start")
 
     # controller.move(dz=0.15)
 
     """
         Go to destination
     """
-    x, y, z = (0, -0.5, 0.77) #hardcoded cockroach location for now
+    x, y, z = (roachX, roachY, 0.77) #hardcoded cockroach location for now
     print(f"Moving to {x} {y} {z}")
 
-    controller.move_to(x, y, target_quat=DEFAULT_QUAT * PyQuaternion(axis=[0, 0, 1], angle=0))
+    controller.move_to(x, y+0.3, target_quat=DEFAULT_QUAT * PyQuaternion(axis=[0, 0, 1], angle=-math.pi/2))
+
+    # controller.move_to(target_quat=DEFAULT_QUAT * PyQuaternion(axis=[0, 0, 1], angle=-math.pi/2) * PyQuaternion(axis=[1, 0, 0], angle=-math.pi/4))
+    # controller.move_to(target_quat=DEFAULT_QUAT * PyQuaternion(axis=[1, 0, 0], angle=0))
+
+
+    controller.move(dz=-0.30)
+
+    controller.move(delta_quat=PyQuaternion(axis=[0, 1, 0], angle=-math.pi/4))
+    controller.move(delta_quat=PyQuaternion(axis=[0, 1, 0], angle=math.pi/4))
+
+    controller.move(dz=0.2)
+
+
+
     # Lower the object and release
     controller.move_to(x, y, z)
-    set_gripper(0.55)
+    # set_gripper(0.55)
+    close_gripper(gazebo_model_name='cockroach', closure=0.55)
+
     # set_model_fixed(gazebo_model_name)
     controller.move(dz=0.25)
-    controller.move(dx=0.15)
+    controller.move_to(x=0.5, y=0)
 
-    open_gripper()
+
+    open_gripper(gazebo_model_name='cockroach')
 
 
     print("Moving to Default Position")
