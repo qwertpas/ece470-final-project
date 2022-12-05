@@ -3,12 +3,15 @@ from pandas import array
 from gazebo_msgs.srv import SpawnModel, DeleteModel
 from geometry_msgs.msg import *
 from gazebo_msgs.msg import ModelStates
+from gazebo_msgs.srv import ApplyBodyWrench
+from gazebo_msgs.srv import GetModelState
 from tf.transformations import quaternion_from_euler
 import rospy, rospkg, rosservice
 import sys
 import time
 import random
 import numpy as np
+from numpy.random import uniform
 
 import xml.etree.ElementTree as ET
 
@@ -102,6 +105,8 @@ def spawn_model(model, pos, name=None, ref_frame='world', color=None):
 
 if __name__ == '__main__':
 
+	rospy.init_node("levelManager")
+
 	try:
 		if '/gazebo/spawn_sdf_model' not in rosservice.get_service_list():
 			print("Waining gazebo service..")
@@ -109,25 +114,46 @@ if __name__ == '__main__':
 		
 		
 		arg = sys.argv[1]
+		delete_model_client = rospy.ServiceProxy('/gazebo/delete_model', DeleteModel)
+		delete_model_client(model_name='cockroach')
+
+		rot = Quaternion(*quaternion_from_euler(0, 0, 0))
+		x_spawn = np.random.uniform(-0.25, 0.25)
+		y_spawn = np.random.uniform(-0.10, 0.10) - 0.5
+		point = Point(x_spawn, y_spawn, 0.8)
+		pose =  Pose(point, rot)
 
 		if arg in ['roach', 'add', 'spawn', 'r']:
-			delete_model_client = rospy.ServiceProxy('/gazebo/delete_model', DeleteModel)
-			delete_model_client(model_name='cockroach')
-
-			rot = Quaternion(*quaternion_from_euler(0, 0, 0))
-			#y from
-			x_spawn = np.random.uniform(-0.25, 0.25)
-			y_spawn = np.random.uniform(-0.10, 0.10) - 0.5
-			point = Point(x_spawn, y_spawn, 1)
-			pose =  Pose(point, rot)
+			
 			spawn_model(model='cockroach', pos=pose, color='Gazebo/Orange')
-			time.sleep(1)
-			spawn_model(model='cockroach', pos=pose, color='Gazebo/Orange')
-			spawn_model(model='cockroach', pos=pose, color='Gazebo/Orange')
+			# time.sleep(1)
+			# spawn_model(model='cockroach', pos=pose, color='Gazebo/Orange')
+			# spawn_model(model='cockroach', pos=pose, color='Gazebo/Orange')
 			print(f"Added a roach at ({x_spawn}, {y_spawn})")
 		elif arg in ['unroach', 'del', 'despawn', 'd']:
-			delete_model_client = rospy.ServiceProxy('/gazebo/delete_model', DeleteModel)
 			print(delete_model_client(model_name='cockroach'))
+		elif arg in ['move', 'r']:
+			mover = rospy.ServiceProxy('/gazebo/apply_body_wrench', ApplyBodyWrench)
+			stater = rospy.ServiceProxy( '/gazebo/get_model_state', GetModelState)
+
+			# delete_model_client(model_name='cockroach')
+			spawn_model(model='cockroach', pos=pose, color='Gazebo/Orange')
+
+			while(True):
+
+				state = stater('cockroach', 'world')
+				print(state)
+
+				wrench = Wrench()
+				wrench.force = Vector3(uniform(-0.001,0.001), uniform(-0.001,0.001), 0.001)
+				wrench.torque = Vector3(0, 0, 0)
+
+				duration = 0.01
+
+
+				succ = mover('cockroach::link', 'world', Point(0,0,0), wrench, rospy.Time().now(), rospy.Duration(duration))
+				
+				time.sleep(uniform(1,2))
 		else:
 			print("Usage: rosrun levelManager levelManager.py roach|unroach")
 			exit()

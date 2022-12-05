@@ -307,12 +307,8 @@ if __name__ == "__main__":
 
     controller.move_to(*DEFAULT_POS, DEFAULT_QUAT)
 
-    # rospy.sleep(0.5)
-
     open_gripper()
 
-    # print("Waiting for vision to start")
-    # vision_res = rospy.wait_for_message("/lego_detections", ModelStates, timeout=None)
 
     image_sub = message_filters.Subscriber("/camera/color/image_raw", Image)
 
@@ -330,10 +326,8 @@ if __name__ == "__main__":
     print("start loop")
 
     while(True):    
+
         cv2.imshow('hsv', hsv)
-        cv2.waitKey(1)
-        # print(hsv)
-        # rospy.sleep(0.5)
         if cv2.waitKey(1)& 0xFF == ord('q'):
             break
 

@@ -38,9 +38,13 @@
       
       <collision name="collision">
         <geometry>
-          <box>
+          <!-- <box>
             <size>0.05 0.05 0.05</size>
-          </box>
+          </box> -->
+          <mesh>
+            <uri>model://cockroach/meshes/cockroach.dae</uri>
+            <scale>0.05 0.05 0.05</scale>
+          </mesh>
         </geometry>
       </collision>
     </link>
