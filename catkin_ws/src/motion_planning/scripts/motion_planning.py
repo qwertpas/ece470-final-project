@@ -11,6 +11,15 @@ from gazebo_msgs.msg import ModelStates
 import rospy
 from pyquaternion import Quaternion as PyQuaternion
 import numpy as np
+import cv2
+from cv_bridge import CvBridge
+
+
+import message_filters
+import sys
+import time
+
+from sensor_msgs.msg import Image
 from gazebo_ros_link_attacher.srv import SetStatic, SetStaticRequest, SetStaticResponse
 from gazebo_ros_link_attacher.srv import Attach, AttachRequest, AttachResponse
 
@@ -227,26 +236,26 @@ def close_gripper(gazebo_model_name, closure=0.55):
     set_gripper(closure)
     rospy.sleep(0.5)
     # Create dynamic joint
-    if gazebo_model_name is not None:
-        req = AttachRequest()
-        req.model_name_1 = gazebo_model_name
-        req.link_name_1 = "link"
-        req.model_name_2 = "robot"
-        req.link_name_2 = "wrist_3_link"
-        attach_srv.call(req)
+    # if gazebo_model_name is not None:
+    #     req = AttachRequest()
+    #     req.model_name_1 = gazebo_model_name
+    #     req.link_name_1 = "link"
+    #     req.model_name_2 = "robot"
+    #     req.link_name_2 = "wrist_3_link"
+    #     attach_srv.call(req)
 
 
 def open_gripper(gazebo_model_name=None):
     set_gripper(0.0)
 
     # Destroy dynamic joint
-    if gazebo_model_name is not None:
-        req = AttachRequest()
-        req.model_name_1 = gazebo_model_name
-        req.link_name_1 = "link"
-        req.model_name_2 = "robot"
-        req.link_name_2 = "wrist_3_link"
-        detach_srv.call(req)
+    # if gazebo_model_name is not None:
+    #     req = AttachRequest()
+    #     req.model_name_1 = gazebo_model_name
+    #     req.link_name_1 = "link"
+    #     req.model_name_2 = "robot"
+    #     req.link_name_2 = "wrist_3_link"
+    #     detach_srv.call(req)
 
 
 def set_model_fixed(model_name):
@@ -266,74 +275,10 @@ def set_model_fixed(model_name):
     setstatic_srv.call(req)
 
 
-def get_approach_quat(facing_direction, approach_angle):
-    quat = DEFAULT_QUAT
-    if facing_direction == (0, 0, 1):
-        pitch_angle = 0
-        yaw_angle = 0
-    elif facing_direction == (1, 0, 0) or facing_direction == (0, 1, 0):
-        pitch_angle = + 0.2
-        if abs(approach_angle) < math.pi/2:
-            yaw_angle = math.pi/2
-        else:
-            yaw_angle = -math.pi/2
-    elif facing_direction == (0, 0, -1):
-        pitch_angle = 0
-        yaw_angle = 0
-    else:
-        raise ValueError(f"Invalid model state {facing_direction}")
-
-    quat = quat * PyQuaternion(axis=(0, 1, 0), angle=pitch_angle)
-    quat = quat * PyQuaternion(axis=(0, 0, 1), angle=yaw_angle)
-    quat = PyQuaternion(axis=(0, 0, 1), angle=approach_angle+math.pi/2) * quat
-
-    return quat
-
-
-def get_axis_facing_camera(quat):
-    axis_x = np.array([1, 0, 0])
-    axis_y = np.array([0, 1, 0])
-    axis_z = np.array([0, 0, 1])
-    new_axis_x = quat.rotate(axis_x)
-    new_axis_y = quat.rotate(axis_y)
-    new_axis_z = quat.rotate(axis_z)
-    # get angle between new_axis and axis_z
-    angle = np.arccos(np.clip(np.dot(new_axis_z, axis_z), -1.0, 1.0))
-    # get if model is facing up, down or sideways
-    if angle < np.pi / 3:
-        return 0, 0, 1
-    elif angle < np.pi / 3 * 2 * 1.2:
-        if abs(new_axis_x[2]) > abs(new_axis_y[2]):
-            return 1, 0, 0
-        else:
-            return 0, 1, 0
-        #else:
-        #    raise Exception(f"Invalid axis {new_axis_x}")
-    else:
-        return 0, 0, -1
-
-
-def get_approach_angle(model_quat, facing_direction):#get gripper approach angle
-    if facing_direction == (0, 0, 1):
-        return model_quat.yaw_pitch_roll[0] - math.pi/2 #rotate gripper
-    elif facing_direction == (1, 0, 0) or facing_direction == (0, 1, 0):
-        axis_x = np.array([0, 1, 0])
-        axis_y = np.array([-1, 0, 0])
-        new_axis_z = model_quat.rotate(np.array([0, 0, 1])) #get z axis of lego
-        # get angle between new_axis and axis_x
-        dot = np.clip(np.dot(new_axis_z, axis_x), -1.0, 1.0) #sin angle between lego z axis and x axis in fixed frame
-        det = np.clip(np.dot(new_axis_z, axis_y), -1.0, 1.0) #cos angle between lego z axis and x axis in fixed frame
-        return math.atan2(det, dot) #get angle between lego z axis and x axis in fixed frame
-    elif facing_direction == (0, 0, -1):
-        return -(model_quat.yaw_pitch_roll[0] - math.pi/2) % math.pi - math.pi
-    else:
-        raise ValueError(f"Invalid model state {facing_direction}")
-
-
 def set_gripper(value):
     goal = control_msgs.msg.GripperCommandGoal()
     goal.command.position = value  # From 0.0 to 0.8
-    goal.command.max_effort = -1  # # Do not limit the effort
+    goal.command.max_effort = 1  # # Do not limit the effort
     action_gripper.send_goal_and_wait(goal, rospy.Duration(10))
 
     return action_gripper.get_result()
@@ -364,10 +309,22 @@ if __name__ == "__main__":
 
     # rospy.sleep(0.5)
 
-    open_gripper(gazebo_model_name='cockroach')
+    open_gripper()
 
-    print("Waiting for vision to start")
-    vision_res = rospy.wait_for_message("/lego_detections", ModelStates, timeout=None)
+    # print("Waiting for vision to start")
+    # vision_res = rospy.wait_for_message("/lego_detections", ModelStates, timeout=None)
+
+    image_sub = message_filters.Subscriber("/camera/color/image_raw", Image)
+
+    rgb = 
+
+    def image_callback(rgb):
+        rgb = CvBridge().imgmsg_to_cv2(rgb, "bgr8")          
+
+    
+    while(True):    
+        cv2.imshow('raw', rgb)
+        cv2.waitKey()
 
     print(vision_res)
 
@@ -381,7 +338,7 @@ if __name__ == "__main__":
     """
         Go to destination
     """
-    x, y, z = (roachX, roachY, 0.77) #hardcoded cockroach location for now
+    x, y, z = (roachX, roachY, 0.8) #hardcoded cockroach location for now
     print(f"Moving to {x} {y} {z}")
 
     controller.move_to(x, y+0.3, target_quat=DEFAULT_QUAT * PyQuaternion(axis=[0, 0, 1], angle=-math.pi/2))
