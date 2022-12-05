@@ -5,7 +5,11 @@ from geometry_msgs.msg import *
 from gazebo_msgs.msg import ModelStates
 from gazebo_msgs.srv import ApplyBodyWrench
 from gazebo_msgs.srv import GetModelState
+from gazebo_msgs.msg import ModelState 
+from gazebo_msgs.srv import SetModelState
 from tf.transformations import quaternion_from_euler
+from pyquaternion import Quaternion as PyQuaternion
+
 import rospy, rospkg, rosservice
 import sys
 import time
@@ -135,25 +139,66 @@ if __name__ == '__main__':
 		elif arg in ['move', 'r']:
 			mover = rospy.ServiceProxy('/gazebo/apply_body_wrench', ApplyBodyWrench)
 			stater = rospy.ServiceProxy( '/gazebo/get_model_state', GetModelState)
-
-			# delete_model_client(model_name='cockroach')
-			spawn_model(model='cockroach', pos=pose, color='Gazebo/Orange')
+			setter = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState)
 
 			while(True):
+				rot = Quaternion(*quaternion_from_euler(0, 0, 0))
+				x_spawn = np.random.uniform(-0.25, 0.25)
+				y_spawn = np.random.uniform(-0.10, 0.10) - 0.5
+				point = Point(x_spawn, y_spawn, 0.8)
+				pose =  Pose(point, rot)
+				spawn_model(model='cockroach', pos=pose, color='Gazebo/Orange')
+				print("spawn new roach")
 
-				state = stater('cockroach', 'world')
-				print(state)
+				while(True):
 
-				wrench = Wrench()
-				wrench.force = Vector3(uniform(-0.001,0.001), uniform(-0.001,0.001), 0.001)
-				wrench.torque = Vector3(0, 0, 0)
-
-				duration = 0.01
-
-
-				succ = mover('cockroach::link', 'world', Point(0,0,0), wrench, rospy.Time().now(), rospy.Duration(duration))
+					state = stater('cockroach', 'world')
+					p = state.pose.position
+					if p.z < 0.75:
+						print(delete_model_client(model_name='cockroach'))
+						break
 				
-				time.sleep(uniform(1,2))
+					dx = uniform(-0.0005,0.0005)
+					dy = uniform(-0.0005,0.0005)
+
+					if p.x < -0.25:
+						dy = 0.001
+						# print('too -x')
+					if p.x > 0.25:
+						dy = -0.001
+						# print('too +x')
+					if p.y > -0.4:
+						dx = 0.001
+						# print('too +y')
+					if p.y < -0.8:
+						dx = -0.001
+						# print('too -y')
+
+
+					# dx += (-p.x - 0) * 0.0005
+					# dy += (p.y - -0.5) * 0.0005
+
+					theta = np.arctan2(dy, dx)
+
+					state_msg = ModelState()
+					state_msg.model_name = 'cockroach'
+					state_msg.pose.position = p
+					state_msg.pose.orientation = PyQuaternion(axis=(0, 0, 1), angle=theta)
+					setter(state_msg)
+
+					time.sleep(0.2)
+
+
+					wrench = Wrench()
+					wrench.force = Vector3(dy, -dx, 0.001)
+					wrench.torque = Vector3(0, 0, 0)
+
+					duration = 0.01
+
+
+					succ = mover('cockroach::link', 'world', Point(0,0,0), wrench, rospy.Time().now(), rospy.Duration(duration))
+					
+					time.sleep(uniform(1, 2))
 		else:
 			print("Usage: rosrun levelManager levelManager.py roach|unroach")
 			exit()
