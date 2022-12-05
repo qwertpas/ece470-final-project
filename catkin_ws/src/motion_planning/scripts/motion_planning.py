@@ -316,15 +316,27 @@ if __name__ == "__main__":
 
     image_sub = message_filters.Subscriber("/camera/color/image_raw", Image)
 
-    rgb = 
+    hsv = np.zeros((100,100,3), dtype=np.uint8)
 
-    def image_callback(rgb):
-        rgb = CvBridge().imgmsg_to_cv2(rgb, "bgr8")          
+    def image_callback(imagemsg):
+        rgb = CvBridge().imgmsg_to_cv2(imagemsg, "bgr8") 
 
+        global hsv
+        hsv = cv2.cvtColor(rgb, cv2.COLOR_BGR2HSV)
+
+
+    image_sub.registerCallback(image_callback)
     
+    print("start loop")
+
     while(True):    
-        cv2.imshow('raw', rgb)
-        cv2.waitKey()
+        cv2.imshow('hsv', hsv)
+        cv2.waitKey(1)
+        # print(hsv)
+        # rospy.sleep(0.5)
+        if cv2.waitKey(1)& 0xFF == ord('q'):
+            break
+
 
     print(vision_res)
 
