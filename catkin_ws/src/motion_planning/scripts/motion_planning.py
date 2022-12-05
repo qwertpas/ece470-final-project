@@ -13,6 +13,7 @@ from pyquaternion import Quaternion as PyQuaternion
 import numpy as np
 import cv2
 from cv_bridge import CvBridge
+import vision
 
 
 import message_filters
@@ -25,64 +26,6 @@ from gazebo_ros_link_attacher.srv import Attach, AttachRequest, AttachResponse
 
 PKG_PATH = os.path.dirname(os.path.abspath(__file__))
 
-MODELS_INFO = {
-    "X1-Y2-Z1": {
-        "home": [0.264589, -0.293903, 0.777] 
-    },
-    "X2-Y2-Z2": {
-        "home": [0.277866, -0.724482, 0.777] 
-    },
-    "X1-Y3-Z2": {
-        "home": [0.268053, -0.513924, 0.777]  
-    },
-    "X1-Y2-Z2": {
-        "home": [0.429198, -0.293903, 0.777] 
-    },
-    "X1-Y2-Z2-CHAMFER": {
-        "home": [0.592619, -0.293903, 0.777]  
-    },
-    "X1-Y4-Z2": {
-        "home": [0.108812, -0.716057, 0.777] 
-    },
-    "X1-Y1-Z2": {
-        "home": [0.088808, -0.295820, 0.777] 
-    },
-    "X1-Y2-Z2-TWINFILLET": {
-        "home": [0.103547, -0.501132, 0.777] 
-    },
-    "X1-Y3-Z2-FILLET": {
-        "home": [0.433739, -0.507130, 0.777]  
-    },
-    "X1-Y4-Z1": {
-        "home": [0.589908, -0.501033, 0.777]  
-    },
-    "X2-Y2-Z2-FILLET": {
-        "home": [0.442505, -0.727271, 0.777] 
-    }
-}
-
-for model, model_info in MODELS_INFO.items():
-    pass
-    #MODELS_INFO[model]["home"] = model_info["home"] + np.array([0.0, 0.10, 0.0])
-
-for model, info in MODELS_INFO.items():
-    model_json_path = os.path.join(PKG_PATH, "..", "models", f"lego_{model}", "model.json")
-    # make path absolute
-    model_json_path = os.path.abspath(model_json_path)
-    # check path exists
-    if not os.path.exists(model_json_path):
-        raise FileNotFoundError(f"Model file {model_json_path} not found")
-
-    model_json = json.load(open(model_json_path, "r"))
-    corners = np.array(model_json["corners"])
-
-    size_x = (np.max(corners[:, 0]) - np.min(corners[:, 0]))
-    size_y = (np.max(corners[:, 1]) - np.min(corners[:, 1]))
-    size_z = (np.max(corners[:, 2]) - np.min(corners[:, 2]))
-
-    #print(f"{model}: {size_x:.3f} x {size_y:.3f} x {size_z:.3f}")
-
-    MODELS_INFO[model]["size"] = (size_x, size_y, size_z)
 
 # Compensate for the interlocking height
 INTERLOCKING_OFFSET = 0.019
@@ -114,122 +57,6 @@ def get_gazebo_model_name(model_name, vision_model_pose):
         if ds <= epsilon:
             return gazebo_model_name
     raise ValueError(f"Model {model_name} at position {vision_model_pose.position.x} {vision_model_pose.position.y} was not found!")
-
-
-def get_model_name(gazebo_model_name):
-    return gazebo_model_name.replace("lego_", "").split("_", maxsplit=1)[0]
-
-
-def get_legos_pos(vision=False):
-    #get legos position reading vision topic
-    if vision:
-        legos = rospy.wait_for_message("/lego_detections", ModelStates, timeout=None)
-    else:
-        models = rospy.wait_for_message("/gazebo/model_states", ModelStates, timeout=None)
-        legos = ModelStates()
-
-        for name, pose in zip(models.name, models.pose):
-            if "X" not in name:
-                continue
-            name = get_model_name(name)
-
-            legos.name.append(name)
-            legos.pose.append(pose)
-    return [(lego_name, lego_pose) for lego_name, lego_pose in zip(legos.name, legos.pose)]
-
-
-def straighten(model_pose, gazebo_model_name):
-    x = model_pose.position.x
-    y = model_pose.position.y
-    z = model_pose.position.z
-    model_quat = PyQuaternion(
-        x=model_pose.orientation.x,
-        y=model_pose.orientation.y,
-        z=model_pose.orientation.z,
-        w=model_pose.orientation.w)
-
-    model_size = MODELS_INFO[get_model_name(gazebo_model_name)]["size"]
-
-    """
-        Calculate approach quaternion and target quaternion
-    """
-
-    facing_direction = get_axis_facing_camera(model_quat)
-    approach_angle = get_approach_angle(model_quat, facing_direction)
-
-    print(f"Lego is facing {facing_direction}")
-    print(f"Angle of approaching measures {approach_angle:.2f} deg")
-
-    # Calculate approach quat
-    approach_quat = get_approach_quat(facing_direction, approach_angle)
-
-    # Get above the object
-    controller.move_to(x, y, target_quat=approach_quat)
-
-    # Calculate target quat
-    regrip_quat = DEFAULT_QUAT
-    if facing_direction == (1, 0, 0) or facing_direction == (0, 1, 0):  # Side
-        target_quat = DEFAULT_QUAT
-        pitch_angle = -math.pi/2 + 0.2
-
-        if abs(approach_angle) < math.pi/2:
-            target_quat = target_quat * PyQuaternion(axis=(0, 0, 1), angle=math.pi/2)
-        else:
-            target_quat = target_quat * PyQuaternion(axis=(0, 0, 1), angle=-math.pi/2)
-        target_quat = PyQuaternion(axis=(0, 1, 0), angle=pitch_angle) * target_quat
-
-        if facing_direction == (0, 1, 0):
-            regrip_quat = PyQuaternion(axis=(0, 0, 1), angle=math.pi/2) * regrip_quat
-
-    elif facing_direction == (0, 0, -1):
-        """
-            Pre-positioning
-        """
-        controller.move_to(z=z, target_quat=approach_quat)
-        close_gripper(gazebo_model_name, model_size[0])
-
-        tmp_quat = PyQuaternion(axis=(0, 0, 1), angle=2*math.pi/6) * DEFAULT_QUAT
-        controller.move_to(SAFE_X, SAFE_Y, z+0.05, target_quat=tmp_quat, z_raise=0.1)  # Move to safe position
-        controller.move_to(z=z)
-        open_gripper(gazebo_model_name)
-
-        approach_quat = tmp_quat * PyQuaternion(axis=(1, 0, 0), angle=math.pi/2)
-
-        target_quat = approach_quat * PyQuaternion(axis=(0, 0, 1), angle=-math.pi)  # Add a yaw rotation of 180 deg
-
-        regrip_quat = tmp_quat * PyQuaternion(axis=(0, 0, 1), angle=math.pi)
-    else:
-        target_quat = DEFAULT_QUAT
-        target_quat = target_quat * PyQuaternion(axis=(0, 0, 1), angle=-math.pi/2)
-
-    """
-        Grip the model
-    """
-    if facing_direction == (0, 0, 1) or facing_direction == (0, 0, -1):
-        closure = model_size[0]
-        z = SURFACE_Z + model_size[2] / 2
-    elif facing_direction == (1, 0, 0):
-        closure = model_size[1]
-        z = SURFACE_Z + model_size[0] / 2
-    elif facing_direction == (0, 1, 0):
-        closure = model_size[0]
-        z = SURFACE_Z + model_size[1] / 2
-    controller.move_to(z=z, target_quat=approach_quat)
-    close_gripper(gazebo_model_name, closure)
-
-    """
-        Straighten model if needed
-    """
-    if facing_direction != (0, 0, 1):
-        z = SURFACE_Z + model_size[2]/2
-
-        controller.move_to(z=z+0.05, target_quat=target_quat, z_raise=0.1)
-        controller.move(dz=-0.05)
-        open_gripper(gazebo_model_name)
-
-        # Re grip the model
-        controller.move_to(z=z, target_quat=regrip_quat, z_raise=0.1)
-        close_gripper(gazebo_model_name, model_size[0])
 
 
 def close_gripper(gazebo_model_name, closure=0.55):
@@ -312,13 +139,21 @@ if __name__ == "__main__":
 
     image_sub = message_filters.Subscriber("/camera/color/image_raw", Image)
 
-    hsv = np.zeros((100,100,3), dtype=np.uint8)
+    rgb = np.zeros((100,100,3), dtype=np.uint8)
+    annotated = np.zeros((100,100,3), dtype=np.uint8)
+    locs = np.zeros((10, 2))
 
     def image_callback(imagemsg):
-        rgb = CvBridge().imgmsg_to_cv2(imagemsg, "bgr8") 
-
-        global hsv
-        hsv = cv2.cvtColor(rgb, cv2.COLOR_BGR2HSV)
+        global rgb
+        global annotated
+        rgb = CvBridge().imgmsg_to_cv2(imagemsg, "bgr8")
+        
+        loc = vision.get_center(rgb)
+        np.roll(locs, -1)
+        locs[-1] = loc
+        
+        if(np.linalg.norm(loc[0] - loc) < 0.1):
+            print('not moved')
 
 
     image_sub.registerCallback(image_callback)
@@ -327,7 +162,7 @@ if __name__ == "__main__":
 
     while(True):    
 
-        cv2.imshow('hsv', hsv)
+        cv2.imshow('rgb', rgb)
         if cv2.waitKey(1)& 0xFF == ord('q'):
             break
 

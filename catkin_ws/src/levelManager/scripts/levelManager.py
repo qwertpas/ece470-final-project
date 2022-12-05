@@ -136,7 +136,7 @@ if __name__ == '__main__':
 			print(f"Added a roach at ({x_spawn}, {y_spawn})")
 		elif arg in ['unroach', 'del', 'despawn', 'd']:
 			print(delete_model_client(model_name='cockroach'))
-		elif arg in ['move', 'r']:
+		elif arg in ['move', 'm']:
 			mover = rospy.ServiceProxy('/gazebo/apply_body_wrench', ApplyBodyWrench)
 			stater = rospy.ServiceProxy( '/gazebo/get_model_state', GetModelState)
 			setter = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState)
@@ -149,6 +149,8 @@ if __name__ == '__main__':
 				pose =  Pose(point, rot)
 				spawn_model(model='cockroach', pos=pose, color='Gazebo/Orange')
 				print("spawn new roach")
+    
+				i = 0
 
 				while(True):
 
@@ -198,7 +200,12 @@ if __name__ == '__main__':
 
 					succ = mover('cockroach::link', 'world', Point(0,0,0), wrench, rospy.Time().now(), rospy.Duration(duration))
 					
-					time.sleep(uniform(1, 2))
+					i += 1
+					if i == 10:
+						time.sleep(uniform(2, 3))
+						i = 0
+					else:
+						time.sleep(uniform(0.2, 0.5))
 		else:
 			print("Usage: rosrun levelManager levelManager.py roach|unroach")
 			exit()
