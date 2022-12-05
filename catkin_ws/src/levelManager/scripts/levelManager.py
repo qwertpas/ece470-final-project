@@ -202,10 +202,21 @@ if __name__ == '__main__':
 					
 					i += 1
 					if i == 10:
-						time.sleep(uniform(2, 3))
+						# sleeptime = uniform(6, 7)
+
+						# time.sleep(sleeptime/2)
+
+						# wrench = Wrench()
+						# wrench.force = Vector3(dy, -dx, 0.001)
+						# wrench.torque = Vector3(0, 0, 0)
+						# duration = 0.01
+						# succ = mover('cockroach::link', 'world', Point(0,0,0), wrench, rospy.Time().now(), rospy.Duration(duration))
+					
+						time.sleep(uniform(6, 7))
+
 						i = 0
 					else:
-						time.sleep(uniform(0.2, 0.5))
+						time.sleep(uniform(0.1, 0.3))
 		else:
 			print("Usage: rosrun levelManager levelManager.py roach|unroach")
 			exit()

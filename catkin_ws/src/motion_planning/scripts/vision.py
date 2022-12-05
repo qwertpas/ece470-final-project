@@ -43,10 +43,18 @@ def get_center(rgb):
     # Find blob centers in the image coordinates
     blob_image_center = []
     num_blobs = len(keypoints)
+
+
     for i in range(num_blobs):
-        if(keypoints[i].size > 15):
+        if(keypoints[i].size > 40):
+            # print(keypoints[i].size)
             blob_image_center.append((keypoints[i].pt[0],keypoints[i].pt[1]))
     num_blobs = len(blob_image_center)
+
+    if num_blobs == 0:
+        return None, rgb, (None, None)
+
+    # print(blob_image_center)
 
     roachX = (blob_image_center[0][0] - 317)*(0.25/-145)
     roachY = (blob_image_center[0][1] - 235.8)*(0.25/145) - 0.5
@@ -54,6 +62,8 @@ def get_center(rgb):
     imgx = (int)(blob_image_center[0][0])
     imgy = (int)(blob_image_center[0][1])
 
-    print(roachX, roachY)
+    # print(roachX, roachY)
     
-    return np.array([roachX, roachY])
+    annotated = cv2.circle(rgb, (imgx, imgy), radius=10, color=(255,0,0,0.5), thickness=2)
+
+    return np.array([roachX, roachY]), annotated, (imgx, imgy)

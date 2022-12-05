@@ -16,11 +16,11 @@
       </geometry>
       <material name="flat_black"/>
     </visual>
-    <collision>
+    <!-- <collision>
       <geometry>
         <mesh filename="package://robotiq_description/meshes/robotiq_85_coupler.stl" />
       </geometry>
-    </collision>
+    </collision> -->
     <inertial>
       <origin xyz="2.073e-05   1.45286e-03  -1.1049e-03" rpy="0 0 0" />
       <mass value="0.168" />
@@ -72,7 +72,7 @@
       <grasp_check>
         <attach_steps>2</attach_steps>    <!-- default: 20 -->
         <detach_steps>2</detach_steps>    <!-- default: 40 -->
-        <min_contact_count>3</min_contact_count>
+        <min_contact_count>1</min_contact_count>
       </grasp_check>
       <gripper_link>robotiq_85_left_finger_tip_link</gripper_link>
       <gripper_link>robotiq_85_right_finger_tip_link</gripper_link>

@@ -48,7 +48,7 @@ class ArmController:
 
         self.move_to(tx, ty, tz, target_quat, blocking=blocking)
 
-    def move_to(self, x=None, y=None, z=None, target_quat=None, z_raise=0.0, blocking=False):
+    def move_to(self, x=None, y=None, z=None, target_quat=None, z_raise=0.0, blocking=False, step=0.5):
         """
         Move the end effector to target_pos with target_quat as orientation
         :param x:
@@ -79,10 +79,11 @@ class ArmController:
         dx, dy, dz = x - sx, y - sy, z - sz
         length = math.sqrt(dx ** 2 + dy ** 2 + dz ** 2) * 300 + 80
         speed = length
+        # speed = length
 
         steps = int(length)
         # step = 1 / steps
-        step = 0.2
+        # step = 0.5
 
         for i in np.arange(0, 1 + step, step):
             i_2 = smooth(i, 2 * math.pi)  # from 0 to 1 to 0
@@ -92,11 +93,12 @@ class ArmController:
             self.send_joints(
                 sx + i_1*dx, sy + i_1*dy, sz + i_1*dz + i_2*z_raise,
                 grip,
-                duration=1/speed*0.9)
+                # duration=1/speed*0.9)
+                duration=0.2)
             # rospy.sleep(1/speed)
 
         if blocking:
-            self.wait_for_position(tol_pos=0.005, tol_vel=0.08)
+            self.wait_for_position(tol_pos=0.005, tol_vel=2)
 
         self.gripper_pose = (x, y, z), target_quat
 

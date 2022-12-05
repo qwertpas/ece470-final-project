@@ -14,6 +14,7 @@ import numpy as np
 import cv2
 from cv_bridge import CvBridge
 import vision
+from threading import Thread
 
 
 import message_filters
@@ -22,7 +23,7 @@ import time
 
 from sensor_msgs.msg import Image
 from gazebo_ros_link_attacher.srv import SetStatic, SetStaticRequest, SetStaticResponse
-from gazebo_ros_link_attacher.srv import Attach, AttachRequest, AttachResponse
+from gazebo_ros_link_attacher.srv import Attach, AttachRequest, AttachResponse, Detach, DetachRequest
 
 PKG_PATH = os.path.dirname(os.path.abspath(__file__))
 
@@ -63,52 +64,113 @@ def close_gripper(gazebo_model_name, closure=0.55):
     set_gripper(closure)
     rospy.sleep(0.5)
     # Create dynamic joint
-    # if gazebo_model_name is not None:
-    #     req = AttachRequest()
-    #     req.model_name_1 = gazebo_model_name
-    #     req.link_name_1 = "link"
-    #     req.model_name_2 = "robot"
-    #     req.link_name_2 = "wrist_3_link"
-    #     attach_srv.call(req)
+    if gazebo_model_name is not None:
+        req = AttachRequest()
+        req.model_name_1 = gazebo_model_name
+        req.link_name_1 = "link"
+        req.model_name_2 = "robot"
+        req.link_name_2 = "wrist_3_link"
+        res = attach_srv.call(req)
+        print(res)
 
 
 def open_gripper(gazebo_model_name=None):
     set_gripper(0.0)
 
+    rospy.sleep(0.5)
+
     # Destroy dynamic joint
-    # if gazebo_model_name is not None:
-    #     req = AttachRequest()
-    #     req.model_name_1 = gazebo_model_name
-    #     req.link_name_1 = "link"
-    #     req.model_name_2 = "robot"
-    #     req.link_name_2 = "wrist_3_link"
-    #     detach_srv.call(req)
+    if gazebo_model_name is not None:
+        req = AttachRequest()
+        req.model_name_1 = gazebo_model_name
+        req.link_name_1 = "link"
+        req.model_name_2 = "robot"
+        req.link_name_2 = "wrist_3_link"
+        res = detach_srv.call(req)
+        print(res)
 
 
-def set_model_fixed(model_name):
-    req = AttachRequest()
-    req.model_name_1 = model_name
-    req.link_name_1 = "link"
-    req.model_name_2 = "ground_plane"
-    req.link_name_2 = "link"
-    attach_srv.call(req)
-
+def stun(model_name):
     req = SetStaticRequest()
-    print("{} TO HOME".format(model_name))
+    print("{} STUNNED".format(model_name))
     req.model_name = model_name
     req.link_name = "link"
     req.set_static = True
-
     setstatic_srv.call(req)
+
+def revive(model_name):
+    req = SetStaticRequest()
+    req.model_name = model_name
+    req.link_name = "link"
+    req.set_static = False
+    print(setstatic_srv.call(req))
 
 
 def set_gripper(value):
     goal = control_msgs.msg.GripperCommandGoal()
     goal.command.position = value  # From 0.0 to 0.8
-    goal.command.max_effort = 1  # # Do not limit the effort
+    goal.command.max_effort = 0.1  
     action_gripper.send_goal_and_wait(goal, rospy.Duration(10))
 
     return action_gripper.get_result()
+
+rgb = np.zeros((100,100,3), dtype=np.uint8)
+annotated = np.zeros((100,100,3), dtype=np.uint8)
+locs = np.random.random((10,2))
+killing = False
+
+
+def kill(controller, roachX, roachY):
+    global killing
+    global locs
+
+    killing = True
+    x, y, z = (roachX, roachY, 0.77)
+    print(f"Moving to {x} {y} {z}")
+
+    controller.move_to(x, y+0.35, 0.9, target_quat=DEFAULT_QUAT * PyQuaternion(axis=[0, 0, 1], angle=-math.pi/2))
+
+    # controller.move_to(target_quat=DEFAULT_QUAT * PyQuaternion(axis=[0, 0, 1], angle=-math.pi/2) * PyQuaternion(axis=[1, 0, 0], angle=-math.pi/4))
+    # controller.move_to(target_quat=DEFAULT_QUAT * PyQuaternion(axis=[1, 0, 0], angle=0))
+
+
+    # controller.move(dz=-0.30)
+
+    controller.move(delta_quat=PyQuaternion(axis=[0, 1, 0], angle=-math.pi/4))
+    controller.move(delta_quat=PyQuaternion(axis=[0, 1, 0], angle=math.pi/4))
+
+
+    # controller.move(dz=0.2)
+    open_gripper(gazebo_model_name='cockroach')
+
+
+    #pick up
+    # controller.move(delta_quat=PyQuaternion(axis=[0, 0, 1], angle=math.pi/2))
+    time.sleep(0.5)
+    controller.move_to(x, y, z+0.25, step=0.1)
+    time.sleep(0.5)
+    controller.move_to(x, y, z, step=0.1)
+    # set_gripper(0.55)
+    time.sleep(1)
+    close_gripper(gazebo_model_name='cockroach', closure=0.55)
+    time.sleep(0.5)
+
+    # controller.move(dz=0.25)
+    controller.move_to(x=0.5, y=0, z=z+0.25, step=0.1)
+
+    time.sleep(1)
+
+    open_gripper(gazebo_model_name='cockroach')
+    time.sleep(0.5)
+
+    controller.move_to(*DEFAULT_POS, DEFAULT_QUAT*PyQuaternion(axis=[0, 0, 1], angle=-math.pi/4))
+   
+    time.sleep(1)
+
+
+    locs = np.random.random((10,2))
+    killing = False
+
 
 
 if __name__ == "__main__":
@@ -132,39 +194,63 @@ if __name__ == "__main__":
     attach_srv.wait_for_service()
     detach_srv.wait_for_service()
 
-    controller.move_to(*DEFAULT_POS, DEFAULT_QUAT)
+    controller.move_to(*DEFAULT_POS, DEFAULT_QUAT*PyQuaternion(axis=[0, 0, 1], angle=-math.pi/4))
 
-    open_gripper()
+    open_gripper(gazebo_model_name='cockroach')
+
 
 
     image_sub = message_filters.Subscriber("/camera/color/image_raw", Image)
 
-    rgb = np.zeros((100,100,3), dtype=np.uint8)
-    annotated = np.zeros((100,100,3), dtype=np.uint8)
-    locs = np.zeros((10, 2))
+    starttime = rospy.get_time()
+
 
     def image_callback(imagemsg):
         global rgb
         global annotated
+        global locs
+
         rgb = CvBridge().imgmsg_to_cv2(imagemsg, "bgr8")
         
-        loc = vision.get_center(rgb)
-        np.roll(locs, -1)
+        loc, annotated, (imgx, imgy) = vision.get_center(rgb)
+        if(loc is None):
+            # print('not fond')
+            return
+
+        locs = np.roll(locs, -1, axis=0)
         locs[-1] = loc
         
-        if(np.linalg.norm(loc[0] - loc) < 0.1):
-            print('not moved')
+        # print(np.linalg.norm(locs[0] - locs[-1]))
+        if(np.linalg.norm(locs[0] - locs[-1]) < 0.005 and rospy.get_time() > starttime + 4):
+            annotated = cv2.putText(annotated, 'kill!', org=(imgx-10, imgy-20), fontFace=0, fontScale=1, thickness=2, color=(0,0,255))
+
+            if(not killing):  
+                print('kill')          
+                thread = Thread(target = kill, args = (controller, locs[-1][0], locs[-1][1]))
+                thread.start()
+
+
 
 
     image_sub.registerCallback(image_callback)
     
     print("start loop")
 
+
+
     while(True):    
 
-        cv2.imshow('rgb', rgb)
+        # cv2.imshow('rgb', rgb)
+        cv2.imshow('annotated', annotated)
         if cv2.waitKey(1)& 0xFF == ord('q'):
             break
+            
+
+
+
+
+            
+        
 
 
     print(vision_res)
