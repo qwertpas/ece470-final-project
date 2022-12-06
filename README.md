@@ -64,7 +64,7 @@ To find a modern solution to our century old problem. We need something that can
 
 ### References
 - UR5 robot arm and kinect camera in Gazebo simulation: https://github.com/pietrolechthaler/UR5-Pick-and-Place-Simulation 
-- ML documentation: http://wiki.ros.org/urdf/XML 
+- XML documentation: http://wiki.ros.org/urdf/XML 
 - Lego Minifig Model: https://grabcad.com/library/lego-minifig-man-woman-figure-1 
 - Cockroach 3D model: https://www.thingiverse.com/thing:1241800 
 
