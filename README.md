@@ -1,4 +1,4 @@
-![cockroach picking](deliverable2.png)
+![cockroach picking](bugshort.gif)
 
 Team members: Christopher Xu, Vanessa Blas, Ethan Hsiao
 
