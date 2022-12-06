@@ -1,0 +1,153 @@
+Initializing node of kinematics
+Waiting for action of gripper controller
+start loop
+kill
+roachxy [ 0.06800635 -0.55807374]
+locs [ 0.07204816 -0.56392109]
+Moving to 0.07204816094760237 -0.5639210878569505 0.77
+kill
+roachxy [ 0.01108016 -0.60453856]
+locs [ 0.00558509 -0.61592722]
+Moving to 0.00558508511247306 -0.6159272239948141 0.77
+kill
+roachxy [ 0.09862833 -0.83834638]
+locs [ 0.11666315 -0.87223713]
+Moving to 0.11666315012964709 -0.8722371344730773 0.77
+kill
+roachxy [-0.00413391 -0.51153804]
+locs [-0.00280057 -0.5078075 ]
+Moving to -0.002800566574622845 -0.5078074961695178 0.77
+kill
+roachxy [-0.06569427 -0.43079032]
+locs [-0.07655608 -0.40989266]
+Moving to -0.07655608078529094 -0.4098926623114224 0.77
+Exception in thread Thread-70:
+Traceback (most recent call last):
+  File "/usr/lib/python3.8/threading.py", line 932, in _bootstrap_inner
+    self.run()
+  File "/usr/lib/python3.8/threading.py", line 870, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/ur3/Documents/ece470-final-project/catkin_ws/src/motion_planning/scripts/motion_planning.py", line 132, in kill
+    controller.move_to(x, y+0.35, 0.9, target_quat=DEFAULT_QUAT * PyQuaternion(axis=[0, 0, 1], angle=-math.pi/2))
+  File "/home/ur3/Documents/ece470-final-project/catkin_ws/src/motion_planning/scripts/controller.py", line 93, in move_to
+    self.send_joints(
+  File "/home/ur3/Documents/ece470-final-project/catkin_ws/src/motion_planning/scripts/controller.py", line 107, in send_joints
+    joint_states = kinematics.get_joints(x, y, z, quat.rotation_matrix)
+  File "/home/ur3/Documents/ece470-final-project/catkin_ws/src/motion_planning/scripts/kinematics.py", line 166, in get_joints
+    th_res = inverse(pose)
+  File "/home/ur3/Documents/ece470-final-project/catkin_ws/src/motion_planning/scripts/kinematics.py", line 89, in inverse
+    phi = acos(d[3] / sqrt(P_05[2 - 1] * P_05[2 - 1] + P_05[1 - 1] * P_05[1 - 1]))
+ValueError: math domain error
+done
+
+
+
+
+Initializing node of kinematics
+Waiting for action of gripper controller
+start loop
+
+ start kill
+actual pos [ 0.0525 -0.3728]
+detect pos [ 0.0614 -0.3448]
+camera err 0.0294
+math domain error
+math domain error
+math domain error
+math domain error
+math domain error
+math domain error
+math domain error
+math domain error
+kill time 10.939000000000021
+
+ start kill
+actual pos [ 0.084  -0.5292]
+detect pos [ 0.0923 -0.5312]
+camera err 0.0086
+kill time 11.894999999999982
+
+ start kill
+actual pos [-0.0645 -0.5378]
+detect pos [-0.0828 -0.5394]
+camera err 0.0184
+kill time 12.425000000000011
+
+ start kill
+actual pos [ 0.039  -0.5519]
+detect pos [ 0.0395 -0.5491]
+camera err 0.0028
+kill time 12.515999999999963
+
+ start kill
+actual pos [ 0.1098 -0.7454]
+detect pos [ 0.1287 -0.7812]
+camera err 0.0405
+kill time 10.92599999999993
+
+ start kill
+actual pos [-0.0538 -0.593 ]
+detect pos [-0.0607 -0.5973]
+camera err 0.0082
+kill time 12.517999999999915
+
+ start kill
+actual pos [-0.1482 -0.6385]
+detect pos [-0.1743 -0.6494]
+camera err 0.0283
+kill time 11.17999999999995
+
+ start kill
+actual pos [-0.1348 -0.4417]
+detect pos [-0.1597 -0.4219]
+camera err 0.0318
+kill time 11.807000000000016
+
+ start kill
+actual pos [-0.0295 -0.6569]
+detect pos [-0.05   -0.6865]
+camera err 0.036
+kill time 12.16700000000003
+
+ start kill
+actual pos [-0.1041 -0.5982]
+detect pos [-0.1227 -0.6141]
+camera err 0.0245
+kill time 12.084999999999923
+
+ start kill
+actual pos [-0.0086 -0.8306]
+detect pos [-0.0092 -0.8713]
+camera err 0.0407
+kill time 9.994000000000028
+
+ start kill
+actual pos [-0.1625 -0.3332]
+detect pos [-0.1971 -0.2986]
+camera err 0.049
+kill time 12.527999999999906
+
+ start kill
+actual pos [-0.3061 -0.6688]
+detect pos [-0.3616 -0.6943]
+camera err 0.0611
+kill time 13.487999999999943
+
+ start kill
+actual pos [ 0.1232 -0.6784]
+detect pos [ 0.1369 -0.7116]
+camera err 0.0359
+kill time 12.267999999999915
+
+ start kill
+actual pos [-0.0349 -0.7072]
+detect pos [-0.0411 -0.7413]
+camera err 0.0347
+kill time 10.061000000000035
+
+ start kill
+actual pos [ 0.2796 -0.6985]
+detect pos [ 0.3287 -0.7189]
+camera err 0.0532
+kill time 12.576000000000022
+done

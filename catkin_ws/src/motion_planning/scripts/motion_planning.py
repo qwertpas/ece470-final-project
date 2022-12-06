@@ -8,6 +8,7 @@ import actionlib
 import control_msgs.msg
 from controller import ArmController
 from gazebo_msgs.msg import ModelStates
+from gazebo_msgs.srv import GetModelState
 import rospy
 from pyquaternion import Quaternion as PyQuaternion
 import numpy as np
@@ -23,9 +24,11 @@ import time
 
 from sensor_msgs.msg import Image
 from gazebo_ros_link_attacher.srv import SetStatic, SetStaticRequest, SetStaticResponse
-from gazebo_ros_link_attacher.srv import Attach, AttachRequest, AttachResponse, Detach, DetachRequest
+from gazebo_ros_link_attacher.srv import Attach, AttachRequest, AttachResponse
 
 PKG_PATH = os.path.dirname(os.path.abspath(__file__))
+
+np.set_printoptions(precision=4)
 
 
 # Compensate for the interlocking height
@@ -64,14 +67,14 @@ def close_gripper(gazebo_model_name, closure=0.55):
     set_gripper(closure)
     rospy.sleep(0.5)
     # Create dynamic joint
-    if gazebo_model_name is not None:
-        req = AttachRequest()
-        req.model_name_1 = gazebo_model_name
-        req.link_name_1 = "link"
-        req.model_name_2 = "robot"
-        req.link_name_2 = "wrist_3_link"
-        res = attach_srv.call(req)
-        print(res)
+    # if gazebo_model_name is not None:
+    #     req = AttachRequest()
+    #     req.model_name_1 = gazebo_model_name
+    #     req.link_name_1 = "link"
+    #     req.model_name_2 = "robot"
+    #     req.link_name_2 = "wrist_3_link"
+    #     res = attach_srv.call(req)
+    #     print(res)
 
 
 def open_gripper(gazebo_model_name=None):
@@ -80,14 +83,14 @@ def open_gripper(gazebo_model_name=None):
     rospy.sleep(0.5)
 
     # Destroy dynamic joint
-    if gazebo_model_name is not None:
-        req = AttachRequest()
-        req.model_name_1 = gazebo_model_name
-        req.link_name_1 = "link"
-        req.model_name_2 = "robot"
-        req.link_name_2 = "wrist_3_link"
-        res = detach_srv.call(req)
-        print(res)
+    # if gazebo_model_name is not None:
+    #     req = AttachRequest()
+    #     req.model_name_1 = gazebo_model_name
+    #     req.link_name_1 = "link"
+    #     req.model_name_2 = "robot"
+    #     req.link_name_2 = "wrist_3_link"
+    #     res = detach_srv.call(req)
+    #     print(res)
 
 
 def stun(model_name):
@@ -124,9 +127,11 @@ def kill(controller, roachX, roachY):
     global killing
     global locs
 
+    starttime = rospy.get_time()
+
     killing = True
     x, y, z = (roachX, roachY, 0.77)
-    print(f"Moving to {x} {y} {z}")
+    # print(f"Moving to {x} {y} {z}")
 
     controller.move_to(x, y+0.35, 0.9, target_quat=DEFAULT_QUAT * PyQuaternion(axis=[0, 0, 1], angle=-math.pi/2))
 
@@ -163,6 +168,8 @@ def kill(controller, roachX, roachY):
     open_gripper(gazebo_model_name='cockroach')
     time.sleep(0.5)
 
+    print("kill time", rospy.get_time() - starttime)
+
     controller.move_to(*DEFAULT_POS, DEFAULT_QUAT*PyQuaternion(axis=[0, 0, 1], angle=-math.pi/4))
    
     time.sleep(1)
@@ -170,6 +177,8 @@ def kill(controller, roachX, roachY):
 
     locs = np.random.random((10,2))
     killing = False
+
+
 
 
 
@@ -186,6 +195,9 @@ if __name__ == "__main__":
     )
     print("Waiting for action of gripper controller")
     action_gripper.wait_for_server()
+
+    stater = rospy.ServiceProxy( '/gazebo/get_model_state', GetModelState)
+
 
     setstatic_srv = rospy.ServiceProxy("/link_attacher_node/setstatic", SetStatic)
     attach_srv = rospy.ServiceProxy("/link_attacher_node/attach", Attach)
@@ -225,7 +237,17 @@ if __name__ == "__main__":
             annotated = cv2.putText(annotated, 'kill!', org=(imgx-10, imgy-20), fontFace=0, fontScale=1, thickness=2, color=(0,0,255))
 
             if(not killing):  
-                print('kill')          
+                print('\n start kill')   
+
+                state = stater('cockroach', 'world')
+                p = state.pose.position
+
+                roachxy = np.array([p.x, p.y])
+                print('actual pos', roachxy)
+                print('detect pos', locs[-1])
+                print('camera err', np.round(np.linalg.norm(roachxy - locs[-1]), 4))
+
+
                 thread = Thread(target = kill, args = (controller, locs[-1][0], locs[-1][1]))
                 thread.start()
 
@@ -246,57 +268,5 @@ if __name__ == "__main__":
             break
             
 
+    print("done")
 
-
-
-            
-        
-
-
-    print(vision_res)
-
-    roachX = vision_res.pose[0].position.x+0.02
-    roachY = vision_res.pose[0].position.y
-
-        # print("Waiting for vision to start")
-
-    # controller.move(dz=0.15)
-
-    """
-        Go to destination
-    """
-    x, y, z = (roachX, roachY, 0.8) #hardcoded cockroach location for now
-    print(f"Moving to {x} {y} {z}")
-
-    controller.move_to(x, y+0.3, target_quat=DEFAULT_QUAT * PyQuaternion(axis=[0, 0, 1], angle=-math.pi/2))
-
-    # controller.move_to(target_quat=DEFAULT_QUAT * PyQuaternion(axis=[0, 0, 1], angle=-math.pi/2) * PyQuaternion(axis=[1, 0, 0], angle=-math.pi/4))
-    # controller.move_to(target_quat=DEFAULT_QUAT * PyQuaternion(axis=[1, 0, 0], angle=0))
-
-
-    controller.move(dz=-0.30)
-
-    controller.move(delta_quat=PyQuaternion(axis=[0, 1, 0], angle=-math.pi/4))
-    controller.move(delta_quat=PyQuaternion(axis=[0, 1, 0], angle=math.pi/4))
-
-    controller.move(dz=0.2)
-
-
-
-    # Lower the object and release
-    controller.move(delta_quat=PyQuaternion(axis=[0, 0, 1], angle=math.pi/2))
-    controller.move_to(x, y, z)
-    # set_gripper(0.55)
-    close_gripper(gazebo_model_name='cockroach', closure=0.55)
-
-    # set_model_fixed(gazebo_model_name)
-    controller.move(dz=0.25)
-    controller.move_to(x=0.5, y=0)
-
-
-    open_gripper(gazebo_model_name='cockroach')
-
-
-    print("Moving to Default Position")
-    controller.move_to(*DEFAULT_POS, DEFAULT_QUAT)
-    # rospy.sleep(0.4)
