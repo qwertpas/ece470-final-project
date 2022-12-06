@@ -1,7 +1,7 @@
 # Cockroach Killing Robot
 ![cockroach picking](bugshort.gif)
 
-### Team members: 
+### Team members
 Christopher Xu, Vanessa Blas, Ethan Hsiao
 
 ### Task
@@ -9,7 +9,7 @@ Our robot arm identifies moving cockroaches on table, terminate the roaches, the
 
 In the simulation, the cockroach is programmed to jump around randomly on the table while staying within the workspace of the robot arm. Every once in a while, the roach will stop for a few seconds. 
 
-### Requirements: 
+### Requirements
 Computer vision and ROS scripts are written in Python 3, with the pip libraries numpy, pandas, and pyquaternion. Drivers are imported in C++ for a UR5 robot. Comfirmed to work on ROS Noetic installed on Ubuntu 20.04.
 
 ### To run
