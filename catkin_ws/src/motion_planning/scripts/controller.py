@@ -104,8 +104,11 @@ class ArmController:
 
     def send_joints(self, x, y, z, quat, duration=1.0):  # x,y,z and orientation of lego block
         # Solve for the joint angles, select the 5th solution
-        joint_states = kinematics.get_joints(x, y, z, quat.rotation_matrix)
-
+        try:
+            joint_states = kinematics.get_joints(x, y, z, quat.rotation_matrix)
+        except Exception as e:
+            print(e)
+            return
         traj = copy.deepcopy(self.default_joint_trajectory)
 
         for _ in range(0, 2):
