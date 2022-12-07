@@ -1,5 +1,5 @@
 # Cockroach Killing Robot
-![cockroach picking](bugshort.gif)
+![cockroach picking](media/bugshort.gif)
 
 ### Team members
 Christopher Xu, Vanessa Blas, Ethan Hsiao

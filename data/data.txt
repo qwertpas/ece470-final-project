@@ -1,51 +1,6 @@
 Initializing node of kinematics
 Waiting for action of gripper controller
 start loop
-kill
-roachxy [ 0.06800635 -0.55807374]
-locs [ 0.07204816 -0.56392109]
-Moving to 0.07204816094760237 -0.5639210878569505 0.77
-kill
-roachxy [ 0.01108016 -0.60453856]
-locs [ 0.00558509 -0.61592722]
-Moving to 0.00558508511247306 -0.6159272239948141 0.77
-kill
-roachxy [ 0.09862833 -0.83834638]
-locs [ 0.11666315 -0.87223713]
-Moving to 0.11666315012964709 -0.8722371344730773 0.77
-kill
-roachxy [-0.00413391 -0.51153804]
-locs [-0.00280057 -0.5078075 ]
-Moving to -0.002800566574622845 -0.5078074961695178 0.77
-kill
-roachxy [-0.06569427 -0.43079032]
-locs [-0.07655608 -0.40989266]
-Moving to -0.07655608078529094 -0.4098926623114224 0.77
-Exception in thread Thread-70:
-Traceback (most recent call last):
-  File "/usr/lib/python3.8/threading.py", line 932, in _bootstrap_inner
-    self.run()
-  File "/usr/lib/python3.8/threading.py", line 870, in run
-    self._target(*self._args, **self._kwargs)
-  File "/home/ur3/Documents/ece470-final-project/catkin_ws/src/motion_planning/scripts/motion_planning.py", line 132, in kill
-    controller.move_to(x, y+0.35, 0.9, target_quat=DEFAULT_QUAT * PyQuaternion(axis=[0, 0, 1], angle=-math.pi/2))
-  File "/home/ur3/Documents/ece470-final-project/catkin_ws/src/motion_planning/scripts/controller.py", line 93, in move_to
-    self.send_joints(
-  File "/home/ur3/Documents/ece470-final-project/catkin_ws/src/motion_planning/scripts/controller.py", line 107, in send_joints
-    joint_states = kinematics.get_joints(x, y, z, quat.rotation_matrix)
-  File "/home/ur3/Documents/ece470-final-project/catkin_ws/src/motion_planning/scripts/kinematics.py", line 166, in get_joints
-    th_res = inverse(pose)
-  File "/home/ur3/Documents/ece470-final-project/catkin_ws/src/motion_planning/scripts/kinematics.py", line 89, in inverse
-    phi = acos(d[3] / sqrt(P_05[2 - 1] * P_05[2 - 1] + P_05[1 - 1] * P_05[1 - 1]))
-ValueError: math domain error
-done
-
-
-
-
-Initializing node of kinematics
-Waiting for action of gripper controller
-start loop
 
  start kill
 actual pos [ 0.0525 -0.3728]
